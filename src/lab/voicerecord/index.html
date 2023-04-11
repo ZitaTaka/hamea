@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <title>Transcript</title>
+  <link href="style.css" rel="stylesheet" type="text/css" />
+</head>
+
+<body>
+  <button id="button" onclick="toggleStartStop()"></button>
+  <div style="border:dotted;padding:10px">
+    <span id="dtm"></span>
+    <table id="hist" contenteditable="true">
+      <tr>
+        <td>Time</td>
+        <td>Speaker</td>
+        <td>*</td>
+        <td>Transcript</td>
+      </tr>
+      <tr id="">
+        <td></td>
+        <td id="span" style="color:grey"></td>
+        <td></td>
+      </tr>
+    </table>
+    <span id="final_span"></span>
+    <span id="interim_span" style="color:grey"></span>
+  </div>
+
+  <script type="text/javascript">
+    let recognizing;
+    const recognition = new webkitSpeechRecognition();
+    recognition.lang = "ja-JP";
+    recognition.continuous = true;
+    recognition.interimResults = true;
+    reset();
+    recognition.onend = reset;
+    var done = [];
+
+    //    let last_final = "";
+
+
+    recognition.onresult = (event) => {
+      let final = "";
+      let interim = "";
+      var day = new Date();
+      for (let i = 0; i < event.results.length; ++i) {
+        if (done.length - 1 < i) {
+          done[i] = true;
+          tr = document.createElement("tr");
+          td1 = document.createElement("td");
+          td1.innerText = ( "0" + day.getHours() ).slice( -2 ) + ":" +  ( "0" + day.getMinutes() ).slice( -2 ) ;
+          td1.id = "time_" + i;
+          td2 = document.createElement("td");
+          td2.innerText = "Unknown";
+          td3 = document.createElement("td");
+          td3.innerText = "-";
+          td3.id = "wip_" + i;
+          td4 = document.createElement("td");
+          td4.innerText = event.results[i][0].transcript;
+          td4.id = "msg_" + i;
+          tr.append(td1, td2, td3, td4);
+          hist.append(tr);
+        }else{
+          if (done.length - 3 == i) {
+            document.getElementById("msg_" + i).style="color:black";
+          }
+          if (done.length - 3 < i) {
+            document.getElementById("msg_" + i).innerText = event.results[i][0].transcript;
+            document.getElementById("msg_" + i).style="color:grey";
+          }
+          if (done.length - 2 < i) {
+            document.getElementById("time_" + i).innerText = ( "0" + day.getHours() ).slice( -2 ) + ":" +  ( "0" + day.getMinutes() ).slice( -2 ) ; 
+          }
+        }
+        //final += event.results[i][0].transcript + "<br>";
+        interim = event.results[i][0].transcript;
+      }
+      for (let j = event.results.length; j < done.length; j++) {
+        document.getElementById("msg_" + j).innerText = "";
+      }
+      final_span.innerHTML = final;
+      interim_span.innerHTML = interim;
+    }
+
+    function reset() {
+      recognizing = false;
+      button.innerHTML = "Click to Speak";
+    }
+
+    function toggleStartStop() {
+      if (recognizing) {
+        recognition.stop();
+        reset();
+      } else {
+        recognition.start();
+        recognizing = true;
+        button.innerHTML = "Click to Stop";
+        final_span.innerHTML = "";
+        interim_span.innerHTML = "";
+      }
+    }
+  </script>
+</body>
+
+</html>
