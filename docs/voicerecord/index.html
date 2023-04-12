@@ -3,39 +3,39 @@
 
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
   <title>Transcript</title>
-  <link href="style.css" rel="stylesheet" type="text/css" />
 </head>
 
 <body>
-  <button id="button" onclick="toggleStartStop()"></button>
-  <div>
-    <p>VoiceRecord</p>
-  </div>
-  <div style="border:dotted;padding:10px">
-    <span id="dtm"></span>
-    <table id="hist" contenteditable="true">
+  <select id="opt_lang"　class="w3-select " name="opt_lang" style="border:none;">
+    <option value="ja-JP" selected>Japanese</option>
+    <option value="en-US">English</option>
+  </select>
+  <button id="button" onclick="toggleStartStop()" class="w3-button w3-round-xlarge" style="background-color: gray;"></button>
+    <div>
+    <div  contenteditable="true">
+      <p>Subject&nbsp;:&nbsp;XXX</p>
+      <p>Date&nbsp;:&nbsp;<span id="dtm">yyyy-mm-dd hh:mm:ss</span></p>
+      <p>Attendance&nbsp;:&nbsp;</p>
+    </div>
+    <table id="hist" contenteditable="true" class="w3-table w3-bordered" >
       <tr>
-        <td>Time</td>
-        <td>Speaker</td>
-        <td>*</td>
-        <td>Transcript</td>
-      </tr>
-      <tr id="">
-        <td></td>
-        <td id="span" style="color:grey"></td>
-        <td></td>
+        <th>Time</th>
+        <th>Speaker</th>
+        <th>*</th>
+        <th>Transcript</th>
       </tr>
     </table>
-    <span id="final_span"></span>
-    <span id="interim_span" style="color:grey"></span>
+   
+    <div style="background-color:lightGray" contenteditable="true"> <p contenteditable="false">Note:</p>
+      <p><br /><br /></div></p>
   </div>
 
   <script type="text/javascript">
     let recognizing;
     const recognition = new webkitSpeechRecognition();
-    recognition.lang = "ja-JP";
     recognition.continuous = true;
     recognition.interimResults = true;
     reset();
@@ -84,23 +84,26 @@
       for (let j = event.results.length; j < done.length; j++) {
         document.getElementById("msg_" + j).innerText = "";
       }
-      final_span.innerHTML = final;
-      interim_span.innerHTML = interim;
+//      final_span.innerHTML = final;
+//      interim_span.innerHTML = interim;
     }
 
     function reset() {
       recognizing = false;
-      button.innerHTML = "Click to Speak";
+      button.innerHTML = "● REC";
+        button.style = "background-color: gray;";
     }
 
     function toggleStartStop() {
+    recognition.lang = document.getElementById("opt_lang").value;
       if (recognizing) {
         recognition.stop();
         reset();
       } else {
         recognition.start();
         recognizing = true;
-        button.innerHTML = "Click to Stop";
+        button.innerHTML = "■ STOP";
+        button.style = "background-color: red;";
         final_span.innerHTML = "";
         interim_span.innerHTML = "";
       }
