@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+  <title>Transcript</title>
+</head>
+
+<body>
+  <select id="opt_lang"　class="w3-select " name="opt_lang" style="border:none;">
+    <option value="ja-JP">Japanese</option>
+    <option value="en-US" selected>English</option>
+  </select>
+  <button id="button" onclick="toggleStartStop()" class="w3-button w3-round-xlarge" style="background-color: gray;"></button>
+    <div>
+    <div  contenteditable="true">
+      <p>Subject&nbsp;:&nbsp;XXX</p>
+      <p>Date&nbsp;:&nbsp;<span id="dtm">yyyy-mm-dd hh:mm:ss</span></p>
+      <p>Attendance&nbsp;:&nbsp;</p>
+    </div>
+    <table id="hist" contenteditable="true" class="w3-table w3-bordered" >
+      <tr>
+        <th>Time</th>
+        <th>Speaker</th>
+        <th>*</th>
+        <th>Transcript</th>
+      </tr>
+    </table>
+   
+    <div style="background-color:lightGray" contenteditable="true"> <p contenteditable="false">Note:</p>
+      <p><br /><br /></div></p>
+  </div>
+
+  <script type="text/javascript">
+    let recognizing;
+    const recognition = new webkitSpeechRecognition();
+    recognition.continuous = true;
+    recognition.interimResults = true;
+    reset();
+    recognition.onend = reset;
+    var done = [];
+
+    //    let last_final = "";
+
+
+    recognition.onresult = (event) => {
+      let final = "";
+      let interim = "";
+      var day = new Date();
+      for (let i = 0; i < event.results.length; ++i) {
+        if (done.length - 1 < i) {
+          done[i] = true;
+          tr = document.createElement("tr");
+          td1 = document.createElement("td");
+          td1.innerText = ( "0" + day.getHours() ).slice( -2 ) + ":" +  ( "0" + day.getMinutes() ).slice( -2 ) ;
+          td1.id = "time_" + i;
+          td2 = document.createElement("td");
+          td2.innerText = "Unknown";
+          td3 = document.createElement("td");
+          td3.innerText = "-";
+          td3.id = "wip_" + i;
+          td4 = document.createElement("td");
+          td4.innerText = event.results[i][0].transcript;
+          td4.id = "msg_" + i;
+          tr.append(td1, td2, td3, td4);
+          hist.append(tr);
+        }else{
+          if (done.length - 3 == i) {
+            document.getElementById("msg_" + i).style="color:black";
+          }
+          if (done.length - 3 < i) {
+            document.getElementById("msg_" + i).innerText = event.results[i][0].transcript;
+            document.getElementById("msg_" + i).style="color:grey";
+          }
+          if (done.length - 2 < i) {
+            document.getElementById("time_" + i).innerText = ( "0" + day.getHours() ).slice( -2 ) + ":" +  ( "0" + day.getMinutes() ).slice( -2 ) ; 
+          }
+        }
+        //final += event.results[i][0].transcript + "<br>";
+        interim = event.results[i][0].transcript;
+      }
+      for (let j = event.results.length; j < done.length; j++) {
+        document.getElementById("msg_" + j).innerText = "";
+      }
+//      final_span.innerHTML = final;
+//      interim_span.innerHTML = interim;
+    }
+
+    function reset() {
+      recognizing = false;
+      button.innerHTML = "● REC";
+        button.style = "background-color: gray;";
+    }
+
+    function toggleStartStop() {
+    recognition.lang = document.getElementById("opt_lang").value;
+      if (recognizing) {
+        recognition.stop();
+        reset();
+      } else {
+        recognition.start();
+        recognizing = true;
+        button.innerHTML = "■ STOP";
+        button.style = "background-color: red;";
+        final_span.innerHTML = "";
+        interim_span.innerHTML = "";
+      }
+    }
+  </script>
+</body>
+
+</html>
