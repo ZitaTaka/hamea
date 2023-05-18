@@ -46,7 +46,9 @@
         <th>Speaker</th>
         <th>*</th>
         <th>Transcript</th>
+        <!-- 拡張用
         <th>X</th>
+        -->
       </tr>
     </table>
 
@@ -60,7 +62,7 @@
   <script type="text/javascript">
     let recognizing = false;
     const recognition = new webkitSpeechRecognition();
-    recognition.continuous = false;
+    recognition.continuous = true;
     recognition.interimResults = true;
     //    recognition.EndSilenceTimeout
     reset();
@@ -103,10 +105,12 @@
           td3.id = "wip_" + j;
           td4 = document.createElement("td");
           td4.id = "msg_" + j;
-          td5 = document.createElement("td");
-          td5.id = "cmd_" + j;
-          td5.contentEditable = "false";
-          tr.append(td1, td2, td3, td4, td5);
+          // 拡張用
+          // td5 = document.createElement("td");
+          // td5.id = "cmd_" + j;
+          // td5.contentEditable = "false";
+          // tr.append(td1, td2, td3, td4, td5);
+          tr.append(td1, td2, td3, td4);
 
           hist.append(tr);
           //  console.log(event.results);
@@ -129,8 +133,9 @@
       for (let k = event.results.length + increment_base; k < done.length; k++) {
         document.getElementById("msg_" + j).innerText = "";
       }
-      for (let l = 0; l < done.length - 1; l++){
-        if(!!document.getElementById("msg_"+l)){
+      for (let l = 0; l < done.length - 1; l++) {
+        if (!!document.getElementById("msg_" + l)) {
+          /*** 拡張用
           if(document.getElementById("cmd_" + l).innerText == ""){
 
             var a;
@@ -152,10 +157,11 @@
             a.href="javascript:document.getElementById('row_" + l + "').remove;false;";
             document.getElementById("cmd_" + l).append(a);
           }
+          ***/
           // console.log("["+document.getElementById("msg_" + l).innerText+"]");
-          if(document.getElementById("msg_" + l).innerText == ""){
+          if (document.getElementById("msg_" + l).innerText == "") {
             document.getElementById("row_" + l).remove();
-          }else{
+          } else {
             document.getElementById("msg_" + l).style = "color:black";
           }
         }
@@ -179,8 +185,8 @@
     }
 
     function restart() {
-        recognition.stop();
-        start;
+      recognition.stop();
+      start;
     }
 
     function toggleStartStop() {
@@ -196,13 +202,13 @@
 
     // 無音状態の検出
     let silenceTimer;
-    recognition.onaudioend = function(event) {
+    recognition.onaudioend = function (event) {
       clearTimeout(silenceTimer);
-      silenceTimer = setTimeout(function() {
+      silenceTimer = setTimeout(function () {
         restart();
       }, 200); // 無音が続いたら停止する
     }
-    </script>
+  </script>
 </body>
 
 </html>
