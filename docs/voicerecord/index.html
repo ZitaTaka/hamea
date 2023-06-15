@@ -26,52 +26,52 @@
     <div contenteditable="true">
     </div>
     <table id="hist" contenteditable="true" class="w3-table w3-bordered">
-      <tr>
-        <td colspan="4">
-          Subject&nbsp;:&nbsp;XXX<br />
-        </td>
-      </tr>
-      <tr>
-        <td colspan="4">
-          Date&nbsp;:&nbsp;<span id="dtm">yyyy-mm-dd hh:mm:ss</span><br />
-        </td>
-      </tr>
-      <tr>
-        <td colspan="4">
-          Attendance&nbsp;:&nbsp;<br />
-        </td>
-      </tr>
-      <tr>
-        <th>Time</th>
-        <th>Speaker</th>
-        <th>*</th>
-        <th>Transcript</th>
-        <!-- 拡張用
-        <th>X</th>
-        -->
-      </tr>
+      <thead>
+        <tr>
+          <td colspan="4">
+            Subject&nbsp;:&nbsp;XXX<br />
+          </td>
+        </tr>
+        <tr>
+          <td colspan="4">
+            Date&nbsp;:&nbsp;<span id="dtm">yyyy-mm-dd hh:mm:ss</span><br />
+          </td>
+        </tr>
+        <tr>
+          <td colspan="4">
+            Attendance&nbsp;:&nbsp;<br />
+          </td>
+        </tr>
+        <tr>
+          <th>*</th>
+          <th>Time</th>
+          <th>Speaker</th>
+          <th>Transcript</th>
+          <th>Note</th>
+        </tr>
+      </thead>
+      <tbody id="result0"></tbody>
     </table>
 
     <div style="background-color:lightGray" contenteditable="true">
       <p contenteditable="false">Note:</p>
-      <p><br /><br />
+      <p><br /><br /></p>
     </div>
-    </p>
   </div>
 
   <script type="text/javascript">
+    // Configulation
     let recognizing = false;
     const recognition = new webkitSpeechRecognition();
     recognition.continuous = true;
     recognition.interimResults = true;
-    //    recognition.EndSilenceTimeout
     reset();
-    recognition.onend = reset;
     var done = [];
-    var increment_base = 0;
+    // done.push([]);  // append blank array as initial.
 
-    //    let last_final = "";
-
+    // ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
+    // OnEnd event
+    //    restart automatically when recognization end.
     recognition.onend = (event) => {
       if (recognizing) {
         increment_base = done.length;
@@ -79,116 +79,113 @@
         recognition.start();
       }
     }
+    // ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
 
+    // ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
+    // OnResult event
+    //    output script when result recogination
     recognition.onresult = (event) => {
-      let final = "";
-      let interim = "";
       var day = new Date();
 
+      // update latest results after remove.
+      done.pop();
+      done.push(event.results);
+
+      // remove latest result result describe
+      let tbodypref = "result_";
+      var latestId_num = done.length - 1;
+      var latestId = tbodypref + latestId_num;
+      var tbody = document.getElementById(latestId);
+      if (tbody === null) {
+        tbody = document.createElement("tbody");
+        tbody.id = latestId;
+        hist.append(tbody);
+      }
+
+      // output script
       for (let i = 0; i < event.results.length; ++i) {
-
-        var j = i + increment_base;
-        //        console.log("i:" + i);
-        //        console.log("i:" + j);
-        //        console.log("increment_base:" + increment_base);
-        //        console.log("done.length:" + done.length);
-        //        console.log(event.results[i][0].transcript);
-
-        if (done.length <= j) {
-          done[j] = true;
-          tr = document.createElement("tr");
-          tr.id = "row_" + j
-          td1 = document.createElement("td");
-          td1.id = "time_" + j;
-          td2 = document.createElement("td");
-          td3 = document.createElement("td");
-          td3.id = "wip_" + j;
-          td4 = document.createElement("td");
-          td4.id = "msg_" + j;
-          // 拡張用
-          // td5 = document.createElement("td");
-          // td5.id = "cmd_" + j;
-          // td5.contentEditable = "false";
-          // tr.append(td1, td2, td3, td4, td5);
-          tr.append(td1, td2, td3, td4);
-
-          hist.append(tr);
+        trow = document.getElementById(latestId + "_row_" + i);
+        if (trow === null) {
+          var trow = document.createElement("tr");
+          trow.id = latestId + "_row_" + i;
+          var td1 = document.createElement("td");
+          td1.id = latestId + "_time_" + i;
+          var td2 = document.createElement("td");
+          td2.id = latestId + "_cmd_" + i;
+          td2.innerHTML = '<input type="button" value="✖" />';
+          td2.addEventListener("click", function () {this.parentElement.innerHTML = "";});
+          var td3 = document.createElement("td");
+          td3.id = latestId + "_wip_" + i;
+          var td4 = document.createElement("td");
+          td4.id = latestId + "_msg_" + i;
+          var td5 = document.createElement("td");
+          td5.id = latestId + "_memo_" + i;
+          trow.append(td2, td1, td3, td4, td5);
+          tbody.append(trow);
           //  console.log(event.results);
         }
-        td1.innerText = ("0" + day.getHours()).slice(-2) + ":" + ("0" + day.getMinutes()).slice(-2);
-        td2.innerText = "Unknown";
-        td3.innerText = "-";
-        td4.innerText = event.results[i][0].transcript;
 
-        if (done.length - 3 < j) {
-          document.getElementById("msg_" + j).innerText = "" + event.results[i][0].transcript;
-          document.getElementById("msg_" + j).style = "color:grey";
+        // set style
+        var elm = document.getElementById(latestId + "_msg_" + i);
+        if (elm !== null) {
+          elm.style = "color:black";
         }
-        if (done.length - 2 < j) {
-          document.getElementById("time_" + j).innerText = ("0" + day.getHours()).slice(-2) + ":" + ("0" + day.getMinutes()).slice(-2);
-        }
-        //final += event.results[i][0].transcript + "<br>";
-        interim = event.results[i][0].transcript;
-      }
-      for (let k = event.results.length + increment_base; k < done.length; k++) {
-        document.getElementById("msg_" + j).innerText = "";
-      }
-      for (let l = 0; l < done.length - 1; l++) {
-        if (!!document.getElementById("msg_" + l)) {
-          /*** 拡張用
-          if(document.getElementById("cmd_" + l).innerText == ""){
 
-            var a;
-            a = document.createElement("button");
-            a.class="w3-button"
-            a.style="background-color: gray;"
-            a.onclick="alert('hoge');";
-            a.innerText="DEL";
-            document.getElementById("cmd_" + l).append(a);
-            a = document.createElement("span");
-            a.innerText="　";
-            document.getElementById("cmd_" + l).append(a);
-            a = document.createElement("a");
-            a.innerText="COPY";
-            a.href="https://www.yahoo.co.jp";
-            document.getElementById("cmd_" + l).append(a);
-            a = document.createElement("a");
-            a.innerText="COPY";
-            a.href="javascript:document.getElementById('row_" + l + "').remove;false;";
-            document.getElementById("cmd_" + l).append(a);
+        // set color unfixed script
+        if (event.results.length - 3 < i) {
+          var elm = document.getElementById(latestId + "_msg_" + i);
+          if (elm !== null) {
+            elm.innerText = "" + event.results[i][0].transcript;
+            elm.style = "color:grey";
           }
-          ***/
-          // console.log("["+document.getElementById("msg_" + l).innerText+"]");
-          if (document.getElementById("msg_" + l).innerText == "") {
-            document.getElementById("row_" + l).remove();
-          } else {
-            document.getElementById("msg_" + l).style = "color:black";
+        }
+        // set color unfixed script
+        if (event.results.length - 2 < i) {
+          var elm = document.getElementById(latestId + "_time_" + i);
+          if (elm !== null) {
+            elm.innerText = ("0" + day.getHours()).slice(-2) + ":" + ("0" + day.getMinutes()).slice(-2);
           }
+        }
+      }
+      for (let i = 0; i < 10; ++i) {
+        var j = event.results.length + i;
+        var elm = document.getElementById(latestId + "_msg_" + j);
+        if (elm !== null) {
+          elm.innerText = "";
         }
       }
     }
 
+    // ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
+    // Reset operation
     function reset() {
       recognizing = false;
       button.innerHTML = "● REC";
       button.style = "background-color: gray;";
     }
+    // ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
 
+    // ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
+    // Start operation
     function start() {
       recognizing = true;
-      increment_base = done.length;
-      recognition.start();
+      done.push([]);
       button.innerHTML = "■ STOP";
       button.style = "background-color: red;";
-      //        final_span.innerHTML = "";
-      //        interim_span.innerHTML = "";
+      recognition.start();
     }
+    // ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
 
+    // ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
+    // Restart operation
     function restart() {
       recognition.stop();
       start;
     }
+    // ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
 
+    // ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
+    // Toggle operation
     function toggleStartStop() {
       recognition.lang = document.getElementById("opt_lang").value;
       if (recognizing) {
@@ -199,15 +196,17 @@
         start()
       }
     }
-
-    // 無音状態の検出
-    let silenceTimer;
-    recognition.onaudioend = function (event) {
-      clearTimeout(silenceTimer);
-      silenceTimer = setTimeout(function () {
-        restart();
-      }, 1000); // 無音が続いたら停止する
+    // ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
+    // ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
+    // Remove operation
+    function removRow(target, row) {
+      document.getElementById(target + "_time_" + row).remove;
+      document.getElementById(target + "_cmd_" + row).remove;
+      document.getElementById(target + "_wip_" + row).remove;
+      document.getElementById(target + "_msg_" + row).remove;
+      document.getElementById(target + "_memo_" + row).remove;
     }
+    // ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
   </script>
 </body>
 
