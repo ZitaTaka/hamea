@@ -10,6 +10,10 @@
       input {
         display: none;
       }
+
+      button {
+        display: none;
+      }
     }
   </style>
   <title>Transcript</title>
@@ -17,17 +21,23 @@
 
 <body>
   <div style="text-align:right; float:right;">
+    <span class="w3-xxlarge">Voice Record </span>
+    <span class="w3-large">V0.10 </span>
     <button id="reload" onclick="location.reload();" class="w3-button w3-round-xlarge"
       style="background-color: gray;">New
       Meeting</button>
   </div>
   <div style="text-align:right; float:left;">
+    <span class="w3-xxlarge"></span>
+    <button id="button" onclick="toggleStartStop();" class="w3-button w3-round-xlarge"
+      style="background-color: gray;"></button>
     <select id="opt_lang" 　class="w3-select " name="opt_lang" style="border:none;">
       <option value="ja-JP" selected>Japanese</option>
       <option value="en-US">English</option>
     </select>
-    <button id="button" onclick="toggleStartStop();" class="w3-button w3-round-xlarge"
-      style="background-color: gray;"></button>
+  </div>
+  <div>
+
   </div>
   <div>
     <div contenteditable="true">
@@ -59,7 +69,8 @@
       </thead>
       <tbody id="result0"></tbody>
     </table>
-
+    <button id="button2" onclick="toggleStartStop();" class="w3-button w3-round-xlarge"
+      style="background-color: gray;"></button>
     <div style="background-color:lightGray" contenteditable="true">
       <p contenteditable="false">Note:</p>
       <p><br /><br /></p>
@@ -169,6 +180,8 @@
       recognizing = false;
       button.innerHTML = "● REC";
       button.style = "background-color: gray;";
+      button2.innerHTML = "● REC";
+      button2.style = "background-color: gray;";
     }
     // ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
 
@@ -179,6 +192,8 @@
       done.push([]);
       button.innerHTML = "■ STOP";
       button.style = "background-color: red;";
+      button2.innerHTML = "■ STOP";
+      button2.style = "background-color: red;";
       recognition.start();
     }
     // ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
