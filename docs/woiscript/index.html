@@ -1,1 +1,235 @@
+<!DOCTYPE html>
+<html>
 
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+  <style>
+    @media print {
+      input {
+        display: none;
+      }
+
+      button {
+        display: none;
+      }
+    }
+  </style>
+  <title>WoiScript 0.10</title>
+</head>
+
+<body>
+  <div style="text-align:right; float:right;">
+    <span class="w3-xxlarge">WoiScript </span>
+    <span class="w3-large">V0.10 </span>
+    <button id="reload" onclick="location.reload();" class="w3-button w3-round-xlarge"
+      style="background-color: gray;">New
+      Meeting</button>
+  </div>
+  <div style="text-align:right; float:left;">
+    <span class="w3-xxlarge"></span>
+    <button id="button" onclick="toggleStartStop();" class="w3-button w3-round-xlarge"
+      style="background-color: gray;"></button>
+    <select id="opt_lang" 　class="w3-select " name="opt_lang" style="border:none;">
+      <option value="ja-JP" selected>Japanese</option>
+      <option value="en-US">English</option>
+    </select>
+  </div>
+  <div>
+
+  </div>
+  <div>
+    <div contenteditable="true">
+    </div>
+    <table id="hist" contenteditable="true" class="w3-table w3-bordered">
+      <thead>
+        <tr>
+          <td colspan="4">
+            Subject&nbsp;:&nbsp;XXX<br />
+          </td>
+        </tr>
+        <tr>
+          <td colspan="4">
+            Date&nbsp;:&nbsp;<span id="dtm">yyyy-mm-dd hh:mm:ss</span><br />
+          </td>
+        </tr>
+        <tr>
+          <td colspan="4">
+            Attendance&nbsp;:&nbsp;<br />
+          </td>
+        </tr>
+        <tr>
+          <th>*</th>
+          <th>Time</th>
+          <th>Speaker</th>
+          <th>Transcript</th>
+          <th>Note</th>
+        </tr>
+      </thead>
+      <tbody id="result0"></tbody>
+    </table>
+    <button id="button2" onclick="toggleStartStop();" class="w3-button w3-round-xlarge"
+      style="background-color: gray;"></button>
+    <div style="background-color:lightGray" contenteditable="true">
+      <p contenteditable="false">Note:</p>
+      <p><br /><br /></p>
+    </div>
+  </div>
+
+  <script type="text/javascript">
+    // Configulation
+    let recognizing = false;
+    const recognition = new webkitSpeechRecognition();
+    recognition.continuous = true;
+    recognition.interimResults = true;
+    reset();
+    var done = [];
+    // done.push([]);  // append blank array as initial.
+
+    // ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
+    // OnEnd event
+    //    restart automatically when recognization end.
+    recognition.onend = (event) => {
+      if (recognizing) {
+        increment_base = done.length;
+        console.log("onend restart");
+        recognition.start();
+      }
+    }
+    // ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
+
+    // ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
+    // OnResult event
+    //    output script when result recogination
+    recognition.onresult = (event) => {
+      var day = new Date();
+
+      // update latest results after remove.
+      done.pop();
+      done.push(event.results);
+
+      // remove latest result result describe
+      let tbodypref = "result_";
+      var latestId_num = done.length - 1;
+      var latestId = tbodypref + latestId_num;
+      var tbody = document.getElementById(latestId);
+      if (tbody === null) {
+        tbody = document.createElement("tbody");
+        tbody.id = latestId;
+        hist.append(tbody);
+      }
+
+      // output script
+      for (let i = 0; i < event.results.length; ++i) {
+        trow = document.getElementById(latestId + "_row_" + i);
+        if (trow === null) {
+          var trow = document.createElement("tr");
+          trow.id = latestId + "_row_" + i;
+          var td1 = document.createElement("td");
+          td1.id = latestId + "_time_" + i;
+          var td2 = document.createElement("td");
+          td2.id = latestId + "_cmd_" + i;
+          td2.innerHTML = '<input type="button" value="✖" />';
+          td2.addEventListener("click", function () {this.parentElement.innerHTML = "";});
+          var td3 = document.createElement("td");
+          td3.id = latestId + "_wip_" + i;
+          var td4 = document.createElement("td");
+          td4.id = latestId + "_msg_" + i;
+          var td5 = document.createElement("td");
+          td5.id = latestId + "_memo_" + i;
+          trow.append(td2, td1, td3, td4, td5);
+          tbody.append(trow);
+          //  console.log(event.results);
+        }
+
+        // set style
+        var elm = document.getElementById(latestId + "_msg_" + i);
+        if (elm !== null) {
+          elm.style = "color:black";
+        }
+
+        // set color unfixed script
+        if (event.results.length - 3 < i) {
+          var elm = document.getElementById(latestId + "_msg_" + i);
+          if (elm !== null) {
+            elm.innerText = "" + event.results[i][0].transcript;
+            elm.style = "color:grey";
+          }
+        }
+        // set color unfixed script
+        if (event.results.length - 2 < i) {
+          var elm = document.getElementById(latestId + "_time_" + i);
+          if (elm !== null) {
+            elm.innerText = ("0" + day.getHours()).slice(-2) + ":" + ("0" + day.getMinutes()).slice(-2);
+          }
+        }
+      }
+      for (let i = 0; i < 10; ++i) {
+        var j = event.results.length + i;
+        var elm = document.getElementById(latestId + "_msg_" + j);
+        if (elm !== null) {
+          elm.innerText = "";
+        }
+      }
+    }
+
+    // ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
+    // Reset operation
+    function reset() {
+      recognizing = false;
+      button.innerHTML = "● REC";
+      button.style = "background-color: gray;";
+      button2.innerHTML = "● REC";
+      button2.style = "background-color: gray;";
+    }
+    // ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
+
+    // ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
+    // Start operation
+    function start() {
+      recognizing = true;
+      done.push([]);
+      button.innerHTML = "■ STOP";
+      button.style = "background-color: red;";
+      button2.innerHTML = "■ STOP";
+      button2.style = "background-color: red;";
+      recognition.start();
+    }
+    // ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
+
+    // ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
+    // Restart operation
+    function restart() {
+      recognition.stop();
+      start;
+    }
+    // ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
+
+    // ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
+    // Toggle operation
+    function toggleStartStop() {
+      recognition.lang = document.getElementById("opt_lang").value;
+      if (recognizing) {
+        recognizing = false;
+        recognition.stop();
+        reset();
+      } else {
+        start()
+      }
+    }
+    // ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
+    // ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
+    // Remove operation
+    function removRow(target, row) {
+      document.getElementById(target + "_time_" + row).remove;
+      document.getElementById(target + "_cmd_" + row).remove;
+      document.getElementById(target + "_wip_" + row).remove;
+      document.getElementById(target + "_msg_" + row).remove;
+      document.getElementById(target + "_memo_" + row).remove;
+    }
+    // ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
+  </script>
+</body>
+
+</html>
